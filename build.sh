@@ -8,6 +8,8 @@ ZIPNAME="OathKeeper-r1-miatoll-$(date '+%Y%m%d-%H%M').zip"
 TC_DIR="$HOME/tc/proton-clang"
 DEFCONFIG="vendor/miatoll-perf_defconfig"
 
+export KBUILD_BUILD_USER=007
+export KBUILD_BUILD_HOST=hornyserver
 export PATH="$TC_DIR/bin:$PATH"
 
 if ! [ -d "$TC_DIR" ]; then
@@ -51,7 +53,7 @@ if [ -f "out/arch/arm64/boot/Image.gz" ] && [ -f "out/arch/arm64/boot/dtbo.img" 
 	rm -rf AnyKernel3
 	echo -e "\nCompleted in $((SECONDS / 60)) minute(s) and $((SECONDS % 60)) second(s) !"
 	echo "Zip: $ZIPNAME"
-	curl --upload-file "$ZIPNAME" http://transfer.sh/"$ZIPNAME"
+	curl --upload-file "$ZIPNAME" https://free.keep.sh
 	echo
 else
 	echo -e "\nCompilation failed!"
