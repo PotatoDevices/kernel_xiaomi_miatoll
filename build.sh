@@ -4,12 +4,12 @@
 # Copyright (C) 2020-2021 Adithya R.
 
 SECONDS=0 # builtin bash timer
-ZIPNAME="OathKeeper-r1-miatoll-$(date '+%Y%m%d-%H%M').zip"
+ZIPNAME="PotatoKernel-miatoll-$(date '+%Y%m%d-%H%M').zip"
 TC_DIR="$HOME/tc/proton-clang"
 DEFCONFIG="vendor/miatoll-perf_defconfig"
 
-export KBUILD_BUILD_USER=007
-export KBUILD_BUILD_HOST=hornyserver
+export KBUILD_BUILD_USER=leddaz
+export KBUILD_BUILD_HOST=mememachine
 export PATH="$TC_DIR/bin:$PATH"
 
 if ! [ -d "$TC_DIR" ]; then
@@ -38,7 +38,7 @@ make -j"$(nproc --all)" O=out ARCH=arm64 CC=clang LD=ld.lld AR=llvm-ar NM=llvm-n
 
 if [ -f "out/arch/arm64/boot/Image.gz" ] && [ -f "out/arch/arm64/boot/dtbo.img" ]; then
 	echo -e "\nKernel compiled succesfully! Zipping up...\n"
-	if ! git clone -q https://github.com/BladeRunner-A2C/AnyKernel3 -b miatoll; then
+	if ! git clone -q https://github.com/LeddaZ/AnyKernel3 -b miatoll; then
 		echo -e "\nCloning AnyKernel3 repo failed! Aborting..."
 		exit 1
 	fi
