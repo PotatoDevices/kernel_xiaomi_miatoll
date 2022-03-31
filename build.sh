@@ -4,7 +4,7 @@
 # Copyright (C) 2020-2021 Adithya R.
 
 SECONDS=0 # builtin bash timer
-ZIPNAME="PotatoKernel-miatoll-$(date '+%Y%m%d-%H%M').zip"
+ZIPNAME="LagoDuria-miatoll-$(date '+%Y%m%d-%H%M').zip"
 TC_DIR="$HOME/tc/proton-clang"
 DEFCONFIG="vendor/miatoll-perf_defconfig"
 
