@@ -48,11 +48,11 @@ else
 fi
 echo -e "Out directory is at $OUT_DIR\n"
 
-export KBUILD_BUILD_USER=007
-export KBUILD_BUILD_HOST=skyfall
+export KBUILD_BUILD_USER=leddaz
+export KBUILD_BUILD_HOST=godopoli
 
 SECONDS=0 # builtin bash timer
-ZIPNAME="Spectre-miatoll-$(date '+%Y%m%d-%H%M').zip"
+ZIPNAME="LagoDuria-miatoll-$(date '+%Y%m%d-%H%M').zip"
 if test -z "$(git rev-parse --show-cdup 2>/dev/null)" &&
    head=$(git rev-parse --verify HEAD 2>/dev/null); then
         ZIPNAME="${ZIPNAME::-4}-$(echo $head | cut -c1-8).zip"
@@ -96,11 +96,8 @@ fi
 
 if [ -f "$OUT_DIR/arch/arm64/boot/Image" ] && [ -f "$OUT_DIR/arch/arm64/boot/dtbo.img" ]; then
 	echo -e "\nKernel compiled succesfully! Zipping up...\n"
-	if [ -d "$AK3_DIR" ]; then
-		cp -r $AK3_DIR AnyKernel3
-		git -C AnyKernel3 checkout miatoll &> /dev/null
-	elif ! git clone -q https://github.com/BladeRunner-A2C/AnyKernel3 -b miatoll; then
-		echo -e "\nAnyKernel3 repo not found locally and couldn't clone from GitHub! Aborting..."
+	if ! git clone -q https://github.com/LeddaZ/AnyKernel3 -b miatoll; then
+		echo -e "\nCloning AnyKernel3 repo failed! Aborting..."
 		exit 1
 	fi
 	cp $OUT_DIR/arch/arm64/boot/Image AnyKernel3
