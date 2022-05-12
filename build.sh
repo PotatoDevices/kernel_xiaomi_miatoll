@@ -4,7 +4,7 @@
 # Copyright (C) 2020-2021 Adithya R.
 
 # Setup getopt.
-long_opts="regen,clean,sdclang,homedir:,tcdir:"
+long_opts="regen,clean"
 getopt_cmd=$(getopt -o rcsh:t: --long "$long_opts" \
             -n $(basename $0) -- "$@") || \
             { echo -e "\nError: Getopt failed. Extra args\n"; exit 1;}
@@ -15,30 +15,13 @@ while true; do
     case "$1" in
         -r|--regen|r|regen) FLAG_REGEN_DEFCONFIG=y;;
         -c|--clean|c|clean) FLAG_CLEAN_BUILD=y;;
-        -s|--sdclang|s|sdclang) FLAG_SDCLANG_BUILD=y;;
-        -h|--homedir|h|homedir) HOME_DIR="$2"; shift;;
-        -t|--tcdir|t|tcdir) TC_DIR="$2"; shift;;
         -o|--outdir|o|outdir) OUT_DIR="$2"; shift;;
         --) shift; break;;
     esac
     shift
 done
 
-# Setup HOME dir
-if [ $HOME_DIR ]; then
-    HOME_DIR=$HOME_DIR
-else
-    HOME_DIR=$HOME
-fi
-echo -e "HOME directory is at $HOME_DIR\n"
-
-# Setup Toolchain dir
-if [ $TC_DIR ]; then
-    TC_DIR="$HOME_DIR/$TC_DIR"
-else
-    TC_DIR="$HOME_DIR/tc"
-fi
-echo -e "Toolchain directory is at $TC_DIR\n"
+TC_DIR="$HOME/tc/proton-clang"
 
 # Setup OUT dir
 if [ $OUT_DIR ]; then
@@ -50,6 +33,15 @@ echo -e "Out directory is at $OUT_DIR\n"
 
 export KBUILD_BUILD_USER=leddaz
 export KBUILD_BUILD_HOST=godopoli
+export PATH="$TC_DIR/bin:$PATH"
+
+if ! [ -d "$TC_DIR" ]; then
+	echo "Proton clang not found! Cloning to $TC_DIR..."
+	if ! git clone -q --depth=1 --single-branch https://github.com/kdrag0n/proton-clang "$TC_DIR"; then
+		echo "Cloning failed! Aborting..."
+		exit 1
+	fi
+fi
 
 SECONDS=0 # builtin bash timer
 ZIPNAME="LagoDuria-miatoll-$(date '+%Y%m%d-%H%M').zip"
@@ -57,18 +49,9 @@ if test -z "$(git rev-parse --show-cdup 2>/dev/null)" &&
    head=$(git rev-parse --verify HEAD 2>/dev/null); then
         ZIPNAME="${ZIPNAME::-4}-$(echo $head | cut -c1-8).zip"
 fi
-CLANG_DIR="$TC_DIR/clang-r450784"
-SDCLANG_DIR="$TC_DIR/sdclang-14/compiler"
-GCC_64_DIR="$TC_DIR/aarch64-linux-android-4.9"
-GCC_32_DIR="$TC_DIR/arm-linux-androideabi-4.9"
-AK3_DIR="$HOME/AnyKernel3"
 DEFCONFIG="vendor/miatoll-perf_defconfig"
 
-if [ "$FLAG_SDCLANG_BUILD" = 'y' ]; then
-export PATH="$SDCLANG_DIR/bin:$PATH"
-else
-export PATH="$CLANG_DIR/bin:$PATH"
-fi
+export PATH="$TC_DIR/bin:$PATH"
 
 # Prep for a clean build, if requested so
 if [ "$FLAG_CLEAN_BUILD" = 'y' ]; then
@@ -88,11 +71,7 @@ mkdir -p $OUT_DIR
 make O=$OUT_DIR ARCH=arm64 $DEFCONFIG
 
 echo -e "\nStarting compilation...\n"
-if [ "$FLAG_SDCLANG_BUILD" = 'y' ]; then
-make -j"$(nproc --all)" O=out ARCH=arm64 HOSTCC=$CLANG_DIR/bin/clang CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip CROSS_COMPILE=$GCC_64_DIR/bin/aarch64-linux-android- CROSS_COMPILE_ARM32=$GCC_32_DIR/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- Image dtbo.img
-else
-make -j"$(nproc --all)" O=out ARCH=arm64 HOSTCC=clang HOSTLD=ld.lld CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip CROSS_COMPILE=$GCC_64_DIR/bin/aarch64-linux-android- CROSS_COMPILE_ARM32=$GCC_32_DIR/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- Image dtbo.img
-fi
+make -j"$(nproc --all)" O=out ARCH=arm64 CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- Image dtbo.img
 
 if [ -f "$OUT_DIR/arch/arm64/boot/Image" ] && [ -f "$OUT_DIR/arch/arm64/boot/dtbo.img" ]; then
 	echo -e "\nKernel compiled succesfully! Zipping up...\n"
